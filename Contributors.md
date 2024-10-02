@@ -32,3 +32,4 @@ Write below this
 3. Munna Bhai - Woh bahar casualty mein koi marne ki haalat mein raha… Toh usko form bharna zaroori hai kya?
 4. Circuit - Bhai ne bola karne ka matlab karne ka
 5. Balu -  Meri ek taang nakli hai, main hockey ka bohat bada khiladi tha
+6. Pandat - Dikkat kaha aa rhi hai?
