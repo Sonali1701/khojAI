@@ -1,77 +1,124 @@
-# First_Contributions
 
-Welcome to the MGMCoET Open Source Contribution Tutorial!
 
-This repository is designed to help you make your first contribution to a real-world project, and we're thrilled to have you on board!
+# First Contributions
 
-The Goal:
+This project aims to simplify and guide the way beginners make their first contribution. If you are looking to make your first contribution, follow the steps below.
 
-Your mission is to add your name to the list of contributors in this repository. This may seem simple, but it's an important step in getting started with open source contributions. By doing so, you'll be joining a community of developers and students who are passionate about coding and collaboration.
+**What all you will be doing?**
 
-Step-by-Step Tutorial
-1. Create a Codeberg Account
+```mermaid
+    graph TD;
+    A(fork)-->B[clone]-->C[edit]-->D[pull request];
+```
 
-If you don’t already have an account, go to Codeberg and sign up.
-2. Fork the Repository
 
-    Navigate to the repository you want to contribute to.
-    Click the Fork button in the top-right corner. This will create a copy of the repository under your account.
+#### If you don't have git on your machine, [install it](https://docs.codeberg.org/getting-started/install-git/). <br>
 
-3. Clone the Repository
+## Fork this repository
 
-    Open your terminal.
-    Clone the forked repository to your local machine using the following command:
+Fork this repository by clicking on the fork button on the top of this page.
+This will create a copy of this repository in your account.
 
-    git clone git@codeberg.org:<YOUR_CODEBERG_USERNAME>/<REPOSITORY_NAME>.git
+<img style="float" width="300" src="https://codeberg.org/MGMCoET/First_Contributions/raw/branch/main/Assets/Fork_Repo.jpg" alt="fork this repository" />
 
-    Replace <YOUR_CODEBERG_USERNAME> and <REPOSITORY_NAME> with your actual username and the repository name.
+## Clone the repository
 
-4. Create a New Branch
 
-    Navigate to the repository directory:
+Now clone the forked repository to your machine. Go to your Codeberg account, open the forked repository and then click the _copy to clipboard_ icon.
 
-    cd <REPOSITORY_NAME>
+<img style="float" width="500" src="https://codeberg.org/MGMCoET/First_Contributions/raw/branch/main/Assets/Copy_URL.jpg" alt="Copy forked repository URL" />
 
-    Create a new branch for your changes:
+Open a terminal/git bash and run the following git command:
 
-    git checkout -b add-contributor
+```bash
+git clone "url you just copied"
+```
 
-5. Edit the Contributors List
+where "url you just copied" (without the quotation marks) is the url to this repository (your fork of this project). See the previous steps to obtain the url.
 
-    Open the CONTRIBUTORS.md file in your favorite text editor.
-    Add your name to the list. For example:
 
-    - Your Name
+For example:
 
-6. Commit Your Changes
+```bash
+git clone git@codeberg.org:your-username/First_Contributions.git
+```
 
-    Stage the changes:
+where `your-username` is your Codeberg username. Here you're copying the contents of the first-contributions repository on Codeberg to your computer.
 
-    git add CONTRIBUTORS.md
+<img style="float" width="600" src="https://codeberg.org/MGMCoET/First_Contributions/raw/branch/main/Assets/Git_Clone.png" alt="Clone the repository" />
 
-    Commit the changes with a meaningful message:
+## Make necessary changes and commit those changes
 
-    git commit -m "Add <YOUR_NAME> to contributors list"
+Now open `Contributors.md` file in your preffered text editor, add your name to it. Don't add it at the beginning or end of the file. Put it in sequence with numbering followed. (You will see instructions in the file itself)
+ 
+<img style="float" width="550" src="https://codeberg.org/MGMCoET/First_Contributions/raw/branch/main/Assets/Adding_Name.png" alt="Add your name in file" />
 
-7. Push Your Changes
 
-    Push the changes to your forked repository:
 
-    git push origin add-contributor
+Now save the file
 
-8. Create a Pull Request
 
-    Go to your forked repository on Codeberg.
-    You should see a prompt to create a pull request. Click on it.
-    Fill in the details and submit the pull request.
+If you go to the project directory using `cd` command and execute the command `git status`, you'll see there are changes.
 
-9. Wait for Review
+<img style="float" width="550" src="https://codeberg.org/MGMCoET/First_Contributions/raw/branch/main/Assets/Git_Status.png" alt="Check status of your commit" />
 
-    The repository maintainers will review your pull request. If everything looks good, they will merge it, and your name will be added to the contributors list!
+Add those changes to the branch you just created using the `git add` command:
 
-Additional Resources
+```bash
+git add Contributors.md
+```
 
-    Codeberg Documentation for more detailed guides and tutorials.
-    Getting Started with Codeberg for a comprehensive guide on creating and managing repositories.
+Now commit those changes using the `git commit` command:
 
-Feel free to ask if you have any questions or run into any issues! Happy contributing! 🎉
+```bash
+git commit -m "First Commit"
+```
+
+<img style="float" width="400" src="https://codeberg.org/MGMCoET/First_Contributions/raw/branch/main/Assets/Add_Commit.png" alt="Adding Commit" />
+
+
+You can type anything in place of "First Commit" it is just to track what commit you made like a comment
+
+## Push changes to GitHub
+
+Push your changes using the command `git push`:
+
+```bash
+git push -u origin main
+```
+<img style="float" width="550" src="https://codeberg.org/MGMCoET/First_Contributions/raw/branch/main/Assets/Push.png" alt="Pushing Commit" />
+
+In this project you will be just using main branch but in other projects replace `main` with the name of the branch you created.
+
+
+<strong>If you encounter any errors while pushing, please search for the error message online for potential solutions. Otherwise, reach out to your friends for help or create an issue to seek assistance.</strong>
+
+
+
+## Submit your changes for review
+
+If you go to your repository on Codeberg, you'll see a `Pull request` button. Click on that button.
+
+<img style="float" width="300" src="https://codeberg.org/MGMCoET/First_Contributions/raw/branch/main/Assets/Merge_Request.jpg" alt="Pulling request" />
+
+Now submit the pull request.
+
+<img style="float" width="550" src="https://codeberg.org/MGMCoET/First_Contributions/raw/branch/main/Assets/Create_Request.jpg" alt="Creating request" />
+<br>
+
+
+<br>Soon I'll be merging all your changes into the main branch of this project. You will get a notification email once the changes have been merged.
+
+
+## Where to go from here?
+
+Congrats! You just completed the standard _fork -> clone -> edit -> pull request_ workflow that you'll often encounter as a contributor!
+
+
+
+Now let's get you started with contributing to other projects. This is a list of projects with different issues you can get started on. Check out ( https://www.codetriage.com/ )
+
+
+For further reference check out <br>
+    https://docs.codeberg.org/ <br>
+    https://opensource.dev/
