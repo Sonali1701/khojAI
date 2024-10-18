@@ -26,13 +26,14 @@ Thank you to all the contributors who have helped make this project better! If y
 
 Thank you for contributing!
 
-Write below this 
-1. Baburao Ganpatrao Apte - Kya gunda banega re tu??
-2. Kacchra Seth - 150 rupiya dega
-3. Munna Bhai - Woh bahar casualty mein koi marne ki haalat mein raha… Toh usko form bharna zaroori hai kya?
-4. Circuit - Bhai ne bola karne ka matlab karne ka
-5. Balu -  Meri ek taang nakli hai, main hockey ka bohat bada khiladi tha
-6. Pandat - Dikkat kaha aa rhi hai?
-7. Aman - echo "I was here" 
+Write below this (Follow the indentation)
+- Baburao Ganpatrao Apte - Kya gunda banega re tu??
+- Kacchra Seth - 150 rupiya dega
+- Munna Bhai - Woh bahar casualty mein koi marne ki haalat mein raha… Toh usko form bharna zaroori hai kya?
+- Circuit - Bhai ne bola karne ka matlab karne ka
+- Balu -  Meri ek taang nakli hai, main hockey ka bohat bada khiladi tha
+- Pandat - Dikkat kaha aa rhi hai?
+- Aman - echo "I was here" 
+- Varsha - print("hello open source")
 
 Namaskar!! Aapka swagat hai open source ki duniya me....

@@ -1,5 +1,4 @@
 
-
 # First Contributions
 
 This project aims to simplify and guide the way beginners make their first contribution. If you are looking to make your first contribution, follow the steps below.
@@ -49,7 +48,7 @@ where `your-username` is your Codeberg username. Here you're copying the content
 
 ## Make necessary changes and commit those changes
 
-Now open `Contributors.md` file in your preffered text editor, add your name to it. Don't add it at the beginning or end of the file. Put it in sequence with numbering followed. (You will see instructions in the file itself)
+Now open `Contributors.md` file in your preffered text editor, add your name to it. Don't add it at the beginning or end of the file. Put it in sequence with indentation followed. (You will see instructions in the file itself)
  
 <img style="float" width="550" src="https://codeberg.org/MGMCoET/First_Contributions/raw/branch/main/Assets/Adding_Name.png" alt="Add your name in file" />
 
