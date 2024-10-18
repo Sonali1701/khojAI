@@ -35,5 +35,6 @@ Write below this (Follow the indentation)
 - Pandat - Dikkat kaha aa rhi hai?
 - Aman - echo "I was here" 
 - Varsha - print("hello open source")
+- Rishi - not so serious !
 
 Namaskar!! Aapka swagat hai open source ki duniya me....
