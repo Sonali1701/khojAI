@@ -1,0 +1,975 @@
+{% extends "base.html" %}
+
+{% block title %}Home - KhojAI{% endblock %}
+
+{% block styles %}
+<style>
+    /* Custom styles */
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    .hero-section {
+        background: linear-gradient(135deg, #6e8efb 0%, #a777e3 100%);
+        color: white;
+        padding: 5rem 0;
+        border-radius: 15px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("{{ url_for('static', filename='images/pattern.png') }}");
+        opacity: 0.1;
+        z-index: 0;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .feature-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        height: 100%;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    .feature-icon {
+        font-size: 2.5rem;
+        background: linear-gradient(135deg, #6e8efb 0%, #a777e3 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem 1rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .stat-card:hover .stat-underline {
+        width: 80px;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+    
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-underline {
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(45deg, #4e54c8, #8f94fb);
+        margin: 1rem auto 0;
+        border-radius: 3px;
+        transition: all 0.3s ease;
+    }
+    
+    .recent-card {
+        transition: transform 0.3s ease;
+        overflow: hidden;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .recent-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .recent-card img {
+        transition: transform 0.5s ease;
+    }
+    
+    .recent-card:hover img {
+        transform: scale(1.1);
+        transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    .section-title {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 2rem;
+    }
+    
+    .section-title::after {
+        content: '';
+        position: absolute;
+        width: 50%;
+        height: 4px;
+        background: linear-gradient(135deg, #6e8efb 0%, #a777e3 100%);
+        bottom: -10px;
+        left: 0;
+        border-radius: 2px;
+    }
+    
+    .testimonial-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        position: relative;
+        margin-bottom: 2rem;
+    }
+    
+    .testimonial-card::before {
+        content: '\201C';
+        font-size: 5rem;
+        position: absolute;
+        top: 10px;
+        left: 20px;
+        color: rgba(110, 142, 251, 0.1);
+        font-family: Georgia, serif;
+    }
+    
+    .testimonial-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #6e8efb;
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    .floating {
+        animation: float 3s ease-in-out infinite;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Scroll to Top Button -->
+<button id="scrollToTop" class="scroll-to-top" title="Go to top">
+    <i class="fas fa-arrow-up"></i>
+</button>
+<!-- Hero Section -->
+<section class="hero-section mb-5 fade-in">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h1 class="display-4 fw-bold mb-4">Reuniting Families Through <span class="text-warning">AI Technology</span></h1>
+                <p class="lead mb-4">KhojAI leverages cutting-edge artificial intelligence to help find missing persons by matching faces across age progressions with unprecedented accuracy.</p>
+                <div class="d-flex flex-wrap gap-4 justify-content-center mt-4">
+                    <a href="{{ url_for('upload') }}" class="btn btn-primary btn-lg px-5 py-3 fw-bold btn-hover-effect report-btn" style="
+                        background: linear-gradient(45deg, #4e54c8, #8f94fb);
+                        border: none;
+                        position: relative;
+                        overflow: hidden;
+                        z-index: 1;
+                        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                        box-shadow: 0 4px 15px rgba(79, 85, 201, 0.4);
+                    ">
+                        <i class="fas fa-upload me-2"></i>Report Missing Person
+                        <span class="btn-pulse"></span>
+                    </a>
+                    <a href="{{ url_for('search') }}" class="btn btn-primary btn-lg px-5 py-3 fw-bold btn-hover-effect search-btn" style="
+                        background: linear-gradient(45deg, #00b09b, #96c93d);
+                        border: none;
+                        position: relative;
+                        overflow: hidden;
+                        z-index: 1;
+                        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                        box-shadow: 0 4px 15px rgba(0, 176, 155, 0.3);
+                    ">
+                        <i class="fas fa-search me-2"></i>Search Database
+                        <span class="btn-pulse-search"></span>
+                    </a>
+                    <style>
+                        .search-btn {
+                            position: relative;
+                            overflow: hidden;
+                        }
+                        
+                        .search-btn::before {
+                            content: '';
+                            position: absolute;
+                            top: 0;
+                            left: -100%;
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                            transition: 0.5s;
+                            z-index: -1;
+                        }
+                        
+                        .search-btn:hover::before {
+                            left: 100%;
+                        }
+                        
+                        .btn-pulse-search {
+                            position: absolute;
+                            width: 100%;
+                            height: 100%;
+                            top: 0;
+                            left: 0;
+                            background: transparent;
+                            border-radius: 4px;
+                            z-index: -1;
+                            opacity: 0;
+                        }
+                        
+                        .search-btn:hover .btn-pulse-search {
+                            animation: pulseSearch 1.5s infinite;
+                            opacity: 1;
+                        }
+                        
+                        @keyframes pulseSearch {
+                            0% {
+                                transform: scale(1);
+                                box-shadow: 0 0 0 0 rgba(0, 176, 155, 0.7);
+                                border-radius: 4px;
+                                opacity: 0.7;
+                            }
+                            70% {
+                                transform: scale(1.05);
+                                box-shadow: 0 0 0 10px rgba(0, 176, 155, 0);
+                                border-radius: 8px;
+                                opacity: 0;
+                            }
+                            100% {
+                                transform: scale(1);
+                                box-shadow: 0 0 0 0 rgba(0, 176, 155, 0);
+                                opacity: 0;
+                            }
+                        }
+                    </style>
+                </div>
+                <style>
+                    .report-btn {
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    
+                    .report-btn::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: -100%;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                        transition: 0.5s;
+                        z-index: -1;
+                    }
+                    
+                    .report-btn:hover::before {
+                        left: 100%;
+                    }
+                    
+                    .btn-pulse {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        top: 0;
+                        left: 0;
+                        background: transparent;
+                        border-radius: 4px;
+                        z-index: -1;
+                        opacity: 0;
+                    }
+                    
+                    .report-btn:hover .btn-pulse {
+                        animation: pulse 1.5s infinite;
+                        opacity: 1;
+                    }
+                    
+                    @keyframes pulse {
+                        0% {
+                            transform: scale(1);
+                            box-shadow: 0 0 0 0 rgba(78, 84, 200, 0.7);
+                            border-radius: 4px;
+                            opacity: 0.7;
+                        }
+                        70% {
+                            transform: scale(1.05);
+                            box-shadow: 0 0 0 10px rgba(78, 84, 200, 0);
+                            border-radius: 8px;
+                            opacity: 0;
+                        }
+                        100% {
+                            transform: scale(1);
+                            box-shadow: 0 0 0 0 rgba(78, 84, 200, 0);
+                            opacity: 0;
+                        }
+                    }
+                </style>
+                <div class="d-flex flex-wrap gap-4 mt-4 justify-content-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Advanced AI Matching</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Secure & Private</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 mb-5 fade-in" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 15px; overflow: hidden;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">Our Impact in Numbers</h2>
+            <p class="text-muted">Helping reunite families with cutting-edge AI technology</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3 col-6">
+                <div class="stat-card h-100" style="
+                    background: white;
+                    border-radius: 15px;
+                    padding: 2rem 1rem;
+                    text-align: center;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    border: 1px solid rgba(0, 0, 0, 0.03);
+                    position: relative;
+                    overflow: hidden;
+                ">
+                    <div class="stat-icon mb-3" style="font-size: 2.5rem; color: #4e54c8;">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number" data-count="1000" style="
+                        font-size: 2.5rem;
+                        font-weight: 700;
+                        background: linear-gradient(45deg, #4e54c8, #8f94fb);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        margin-bottom: 0.5rem;
+                        line-height: 1.2;
+                    ">0</div>
+                    <h5 class="mb-0" style="color: #495057; font-weight: 600;">Persons Found</h5>
+                    <div class="stat-underline" style="
+                        width: 50px;
+                        height: 3px;
+                        background: linear-gradient(45deg, #4e54c8, #8f94fb);
+                        margin: 1rem auto 0;
+                        border-radius: 3px;
+                        transition: all 0.3s ease;
+                    "></div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card h-100" style="
+                    background: white;
+                    border-radius: 15px;
+                    padding: 2rem 1rem;
+                    text-align: center;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    border: 1px solid rgba(0, 0, 0, 0.03);
+                    position: relative;
+                    overflow: hidden;
+                ">
+                    <div class="stat-icon mb-3" style="font-size: 2.5rem; color: #00b09b;">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-number" data-count="95" style="
+                        font-size: 2.5rem;
+                        font-weight: 700;
+                        background: linear-gradient(45deg, #00b09b, #96c93d);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        margin-bottom: 0.5rem;
+                        line-height: 1.2;
+                    ">0<small style="font-size: 1.5rem;">%</small></div>
+                    <h5 class="mb-0" style="color: #495057; font-weight: 600;">Success Rate</h5>
+                    <div class="stat-underline" style="
+                        width: 50px;
+                        height: 3px;
+                        background: linear-gradient(45deg, #00b09b, #96c93d);
+                        margin: 1rem auto 0;
+                        border-radius: 3px;
+                        transition: all 0.3s ease;
+                    "></div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card h-100" style="
+                    background: white;
+                    border-radius: 15px;
+                    padding: 2rem 1rem;
+                    text-align: center;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    border: 1px solid rgba(0, 0, 0, 0.03);
+                    position: relative;
+                    overflow: hidden;
+                ">
+                    <div class="stat-icon mb-3" style="font-size: 2.5rem; color: #ff6b6b;">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="stat-number" data-count="50" style="
+                        font-size: 2.5rem;
+                        font-weight: 700;
+                        background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        margin-bottom: 0.5rem;
+                        line-height: 1.2;
+                    ">0<small style="font-size: 1.5rem;">+</small></div>
+                    <h5 class="mb-0" style="color: #495057; font-weight: 600;">Active Partners</h5>
+                    <div class="stat-underline" style="
+                        width: 50px;
+                        height: 3px;
+                        background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+                        margin: 1rem auto 0;
+                        border-radius: 3px;
+                        transition: all 0.3s ease;
+                    "></div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-card h-100" style="
+                    background: white;
+                    border-radius: 15px;
+                    padding: 2rem 1rem;
+                    text-align: center;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    border: 1px solid rgba(0, 0, 0, 0.03);
+                    position: relative;
+                    overflow: hidden;
+                ">
+                    <div class="stat-icon mb-3" style="font-size: 2.5rem; color: #6c5ce7;">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="stat-number" data-count="24" style="
+                        font-size: 2.5rem;
+                        font-weight: 700;
+                        background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        margin-bottom: 0.5rem;
+                        line-height: 1.2;
+                    ">24/7</div>
+                    <h5 class="mb-0" style="color: #495057; font-weight: 600;">Support</h5>
+                    <div class="stat-underline" style="
+                        width: 50px;
+                        height: 3px;
+                        background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+                        margin: 1rem auto 0;
+                        border-radius: 3px;
+                        transition: all 0.3s ease;
+                    "></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 mb-5 fade-in" style="background-color: #f8f9fa;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-3">Simple Steps</span>
+            <h2 class="display-5 fw-bold mb-3">How It Works</h2>
+            <p class="lead text-muted mx-auto" style="max-width: 700px;">Our platform makes it easy to report and find missing persons using cutting-edge AI technology. Here's how you can help bring someone home.</p>
+        </div>
+        
+        <div class="row g-4 position-relative">
+            <!-- Connecting line -->
+            <div class="position-absolute top-0 start-0 h-100 d-none d-lg-block" style="width: 100%;">
+                <div class="position-relative h-100" style="left: 16.66%; width: 66.66%;">
+                    <div class="position-absolute top-50 start-0 end-0" style="height: 2px; background: linear-gradient(90deg, rgba(110, 142, 251, 0.2), rgba(110, 142, 251, 0.8), rgba(110, 142, 251, 0.2));"></div>
+                </div>
+            </div>
+            
+            <!-- Step 1 -->
+            <div class="col-lg-4">
+                <div class="how-it-works-card h-100" style="
+                    background: white;
+                    border-radius: 15px;
+                    padding: 2.5rem 2rem;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                    border: 1px solid rgba(0, 0, 0, 0.03);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    position: relative;
+                    z-index: 1;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                ">
+                    <div class="feature-icon mb-4" style="
+                        font-size: 2.5rem;
+                        background: linear-gradient(135deg, #6e8efb 0%, #a777e3 100%);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        width: 80px;
+                        height: 80px;
+                        margin: 0 auto;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background-color: rgba(110, 142, 251, 0.1);
+                        border-radius: 50%;
+                        margin-bottom: 1.5rem;
+                    ">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h3 class="h4 text-center mb-3" style="color: #2d3748;">Report Missing</h3>
+                    <p class="text-muted text-center mb-4">Quickly submit detailed information and clear photos of missing persons to our secure, encrypted database. Your privacy and security are our top priority.</p>
+                    <div class="mt-auto text-center">
+                        <a href="{{ url_for('upload') }}" class="btn btn-primary btn-hover-effect" style="
+                            background: linear-gradient(45deg, #6e8efb, #a777e3);
+                            border: none;
+                            padding: 0.75rem 1.5rem;
+                            border-radius: 50px;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                            position: relative;
+                            overflow: hidden;
+                            z-index: 1;
+                        ">
+                            <span class="position-relative">Report Now <i class="fas fa-arrow-right ms-2"></i></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="col-lg-4">
+                <div class="how-it-works-card h-100" style="
+                    background: white;
+                    border-radius: 15px;
+                    padding: 2.5rem 2rem;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                    border: 1px solid rgba(0, 0, 0, 0.03);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    position: relative;
+                    z-index: 1;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                ">
+                    <div class="feature-icon mb-4" style="
+                        font-size: 2.5rem;
+                        background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        width: 80px;
+                        height: 80px;
+                        margin: 0 auto;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background-color: rgba(0, 176, 155, 0.1);
+                        border-radius: 50%;
+                        margin-bottom: 1.5rem;
+                    ">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 class="h4 text-center mb-3" style="color: #2d3748;">AI-Powered Search</h3>
+                    <p class="text-muted text-center mb-4">Our advanced facial recognition AI scans through thousands of records to find potential matches, even accounting for age progression and other changes over time.</p>
+                    <div class="mt-auto text-center">
+                        <a href="{{ url_for('search') }}" class="btn btn-primary btn-hover-effect" style="
+                            background: linear-gradient(45deg, #00b09b, #96c93d);
+                            border: none;
+                            padding: 0.75rem 1.5rem;
+                            border-radius: 50px;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                            position: relative;
+                            overflow: hidden;
+                            z-index: 1;
+                        ">
+                            <span class="position-relative">Search Now <i class="fas fa-arrow-right ms-2"></i></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="col-lg-4">
+                <div class="how-it-works-card h-100" style="
+                    background: white;
+                    border-radius: 15px;
+                    padding: 2.5rem 2rem;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                    border: 1px solid rgba(0, 0, 0, 0.03);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    position: relative;
+                    z-index: 1;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                ">
+                    <div class="feature-icon mb-4" style="
+                        font-size: 2.5rem;
+                        background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        width: 80px;
+                        height: 80px;
+                        margin: 0 auto;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background-color: rgba(255, 107, 107, 0.1);
+                        border-radius: 50%;
+                        margin-bottom: 1.5rem;
+                    ">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <h3 class="h4 text-center mb-3" style="color: #2d3748;">Age Progression</h3>
+                    <p class="text-muted text-center mb-4">Our advanced age progression technology helps visualize how a missing person might look today, increasing the chances of recognition and reunion.</p>
+                    <div class="mt-auto text-center">
+                        <a href="{{ url_for('simulate') }}" class="btn btn-primary btn-hover-effect" style="
+                            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+                            border: none;
+                            padding: 0.75rem 1.5rem;
+                            border-radius: 50px;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                            position: relative;
+                            overflow: hidden;
+                            z-index: 1;
+                        ">
+                            <span class="position-relative">Try It Now <i class="fas fa-arrow-right ms-2"></i></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            .how-it-works-card {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            
+            .how-it-works-card:hover {
+                transform: translateY(-10px) scale(1.02);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+            }
+            
+            .feature-icon i {
+                transition: transform 0.3s ease;
+            }
+            
+            .how-it-works-card:hover .feature-icon i {
+                transform: scale(1.2);
+            }
+            
+            .btn-hover-effect::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: 0.5s;
+                z-index: -1;
+            }
+            
+            .btn-hover-effect:hover::before {
+                left: 100%;
+            }
+        </style>
+    </div>
+</section>
+
+<!-- Recent Uploads Section -->
+{% if recent_records %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">Recently Added Cases</h2>
+            <p class="text-muted">These individuals have been recently reported missing. Help us bring them home.</p>
+        </div>
+        
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for record in recent_records %}
+            <div class="col">
+                <div class="recent-card card h-100">
+                    <div class="position-relative overflow-hidden" style="height: 250px;">
+                        <img src="{{ url_for('static', filename=record.photo_path) }}" 
+                             class="card-img-top h-100 w-100" 
+                             alt="{{ record.name }}"
+                             style="object-fit: cover;">
+                        <div class="position-absolute bottom-0 start-0 w-100 p-3 text-white" 
+                             style="background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                            <h5 class="card-title text-white mb-1">{{ record.name }}</h5>
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-{{ 'venus' if record.gender.lower() == 'female' else 'mars' }} me-2"></i>
+                                <span>{{ record.age }} years old</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                <small>{{ record.location or 'Location not specified' }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="far fa-calendar-alt me-1"></i>
+                                {{ record.created_at|datetimeformat('%b %d, %Y') if record.created_at else 'Date not available' }}
+                            </small>
+                            <a href="{{ url_for('search') }}?q={{ record.name|urlencode }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-search me-1"></i> Search Similar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{{ url_for('search') }}" class="btn btn-primary px-4 py-2">
+                <i class="fas fa-search me-2"></i>View All Cases
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Testimonials Section -->
+<section class="py-5 fade-in">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">Success Stories</h2>
+            <p class="text-muted">Hear from families who have been reunited through our platform</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="testimonial-card h-100">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Testimonial" class="testimonial-avatar me-3">
+                        <div>
+                            <h5 class="mb-0">Sarah Johnson</h5>
+                            <p class="text-muted mb-0">Mother of Found Child</p>
+                        </div>
+                    </div>
+                    <p class="mb-0">"After 3 long years of searching, KhojAI helped us find our daughter. The age progression feature was incredibly accurate and led to her safe return."</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="testimonial-card h-100">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Testimonial" class="testimonial-avatar me-3">
+                        <div>
+                            <h5 class="mb-0">Michael Chen</h5>
+                            <p class="text-muted mb-0">Brother of Found Sibling</p>
+                        </div>
+                    </div>
+                    <p class="mb-0">"The AI matching system is remarkable. It identified my brother after 5 years apart, even though he looked completely different. We're forever grateful."</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="testimonial-card h-100">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Testimonial" class="testimonial-avatar me-3">
+                        <div>
+                            <h5 class="mb-0">Priya Patel</h5>
+                            <p class="text-muted mb-0">Social Worker</p>
+                        </div>
+                    </div>
+                    <p class="mb-0">"As a social worker, I've seen many missing person cases. KhojAI's technology has revolutionized how we approach these cases with its accuracy and speed."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white fade-in">
+    <div class="container text-center">
+        <h2 class="display-5 fw-bold mb-4">Ready to help or need assistance?</h2>
+        <p class="lead mb-4">Join our community in the mission to reunite families</p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            <a href="{{ url_for('upload') }}" class="btn btn-light btn-lg px-4 py-2 fw-bold">
+                <i class="fas fa-upload me-2"></i>Report Missing Person
+            </a>
+            <a href="{{ url_for('search') }}" class="btn btn-outline-light btn-lg px-4 py-2 fw-bold btn-hover-effect">
+                <i class="fas fa-search me-2"></i>Search Database
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Scroll to top functionality
+    const scrollToTopBtn = document.getElementById('scrollToTop');
+    
+    // Show/hide scroll to top button
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            scrollToTopBtn.classList.add('visible');
+        } else {
+            scrollToTopBtn.classList.remove('visible');
+        }
+    });
+    
+    // Smooth scroll to top
+    scrollToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+    
+    // Add fade-in animation to sections on scroll
+    const fadeElements = document.querySelectorAll('.fade-in');
+    
+    const fadeInOnScroll = () => {
+        fadeElements.forEach(element => {
+            const elementTop = element.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+            
+            if (elementTop < windowHeight - 100) {
+                element.classList.add('visible');
+            }
+        });
+    };
+    
+    // Run once on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        fadeInOnScroll();
+        
+        // Add hover effect to all buttons with btn-hover-effect class
+        const buttons = document.querySelectorAll('.btn-hover-effect');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                
+                this.appendChild(ripple);
+                
+                // Remove the ripple element after animation completes
+                setTimeout(() => {
+                    ripple.remove();
+                }, 1000);
+            });
+        });
+    });
+    
+    // Run on scroll
+    window.addEventListener('scroll', fadeInOnScroll);
+    
+    // Add smooth scroll to all anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+            
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Animate numbers
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+        
+        // Animate stats when they come into view
+        const statNumbers = document.querySelectorAll('.stat-number');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const target = entry.target;
+                    const count = parseInt(target.getAttribute('data-count'));
+                    const suffix = target.getAttribute('data-suffix') || '';
+                    animateValue(target, 0, count, 2000);
+                    observer.unobserve(target);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        statNumbers.forEach(stat => observer.observe(stat));
+        
+        // Add smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

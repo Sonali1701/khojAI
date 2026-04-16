@@ -1,0 +1,1056 @@
+{% extends "base.html" %}
+
+{% block title %}Search - KhojAI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm mb-5">
+            <div class="card-header bg-primary text-white">
+                <h2 class="h4 mb-0"><i class="fas fa-search me-2"></i>Search Our Database</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="upload-area p-4 border rounded text-center" style="min-height: 300px;">
+                            <div id="dropZone" class="h-100 d-flex flex-column justify-content-center align-items-center" 
+                                 style="border: 2px dashed #ccc; border-radius: 5px; cursor: pointer;">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                <h5>Upload a photo to search</h5>
+                                <p class="text-muted small mb-0">Drag & drop an image here or click to browse</p>
+                                <p class="text-muted small">(JPG, PNG, Max 5MB)</p>
+                            </div>
+                            <input type="file" id="searchImage" name="photo" style="display: none;" accept="image/*">
+                            <div id="previewContainer" class="mt-3 text-center" style="display: none;">
+                                <img id="imagePreview" src="#" alt="Preview" class="img-fluid rounded" style="max-height: 200px;">
+                                <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="changeImage">
+                                    <i class="fas fa-sync-alt me-1"></i> Change Image
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="search-options mt-4">
+                            <h5 class="mb-3">Search Options</h5>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="ageFilter" checked>
+                                <label class="form-check-label" for="ageFilter">Filter by age range</label>
+                            </div>
+                            <div class="row g-2 mb-3" id="ageRangeContainer">
+                                <div class="col">
+                                    <input type="number" class="form-control form-control-sm" id="minAge" placeholder="Min age" min="0" max="120">
+                                </div>
+                                <div class="col-auto align-self-center">to</div>
+                                <div class="col">
+                                    <input type="number" class="form-control form-control-sm" id="maxAge" placeholder="Max age" min="0" max="120">
+                                </div>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="genderFilter">
+                                <label class="form-check-label" for="genderFilter">Filter by gender</label>
+                            </div>
+                            <div class="mb-3" id="genderOptions" style="display: none;">
+                                <select class="form-select form-select-sm" id="genderSelect">
+                                    <option value="all" selected>All Genders</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary w-100" id="searchButton" disabled>
+                            <i class="fas fa-search me-2"></i> Search
+                        </button>
+                    </div>
+                    
+                    <div class="col-md-7">
+                        <div id="searchResults" class="search-results" style="max-height: 600px; overflow-y: auto;">
+                            <div class="text-center text-muted py-5" id="initialState">
+                                <i class="fas fa-search fa-4x mb-3 opacity-25"></i>
+                                <h5>Search for missing persons</h5>
+                                <p class="mb-0">Upload a photo to find matches in our database</p>
+                            </div>
+                            
+                            <div id="loadingState" class="text-center py-5" style="display: none;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p>Searching for matches...</p>
+                            </div>
+                            
+                            <div id="resultsContainer" style="display: none;">
+                                <h5 class="mb-3">Matching Found Persons:</h5>
+                                <div id="matchesList" class="row">
+                                    <!-- Matches will be inserted here -->
+                                </div>
+                            </div>
+                            <div id="noMatches" class="text-center py-5" style="display: none;">
+                                <i class="fas fa-user-times fa-3x text-warning mb-3"></i>
+                                <h5>No matches found</h5>
+                                <p>We couldn't find any matches for your search.</p>
+                                <button class="btn btn-outline-primary" id="tryAgainBtn">
+                                    <i class="fas fa-redo me-1"></i> Try Again
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Result Item Template (Hidden) -->
+<template id="resultTemplate">
+    <div class="card mb-3 result-item">
+        <div class="row g-0">
+            <div class="col-md-4">
+                <img src="" class="img-fluid rounded-start result-image" alt="Match" style="height: 150px; width: 100%; object-fit: cover;">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title mb-1 result-name">John Doe</h5>
+                        <span class="badge bg-success result-similarity">95% Match</span>
+                    </div>
+                    <p class="card-text mb-1">
+                        <small class="text-muted">
+                            <i class="fas fa-venus-mars me-1"></i> <span class="result-gender">Male</span>, 
+                            <span class="result-age">25</span> years old
+                        </small>
+                    </p>
+                    <p class="card-text mb-1">
+                        <small class="text-muted">
+                            <i class="fas fa-map-marker-alt me-1"></i> 
+                            <span class="result-location">New York, USA</span>
+                        </small>
+                    </p>
+                    <p class="card-text mb-1">
+                        <small class="text-muted">
+                            <i class="far fa-calendar-alt me-1"></i> 
+                            Last seen: <span class="result-date">Oct 15, 2023</span>
+                        </small>
+                    </p>
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-primary view-details" data-id="">
+                            <i class="fas fa-eye me-1"></i> View Details
+                        </button>
+                        <button class="btn btn-sm btn-outline-success ms-2 report-found" data-id="">
+                            <i class="fas fa-check-circle me-1"></i> Report Found
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Simple and reliable file upload handling
+document.addEventListener('DOMContentLoaded', function() {
+    // Get essential DOM elements
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('searchImage');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const searchButton = document.getElementById('searchButton');
+    
+    // Make sure required elements exist
+    if (!dropZone || !fileInput) {
+        console.error('Required elements not found');
+        return;
+    }
+    
+    // Handle click on drop zone
+    dropZone.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        fileInput.click();
+    });
+    
+    // Handle file selection
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file (JPG, PNG)');
+                return;
+            }
+            
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size should be less than 5MB');
+                return;
+            }
+            
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (imagePreview) imagePreview.src = e.target.result;
+                if (dropZone) dropZone.style.display = 'none';
+                if (previewContainer) previewContainer.style.display = 'block';
+                if (searchButton) searchButton.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Handle change image button
+    const changeImageBtn = document.getElementById('changeImage');
+    if (changeImageBtn) {
+        changeImageBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (dropZone) dropZone.style.display = 'flex';
+            if (previewContainer) previewContainer.style.display = 'none';
+            if (searchButton) searchButton.disabled = true;
+            fileInput.value = '';
+        });
+    }
+    
+    // Initialize filter options
+    const ageFilter = document.getElementById('ageFilter');
+    const genderFilter = document.getElementById('genderFilter');
+    const ageRangeContainer = document.getElementById('ageRangeContainer');
+    const genderOptions = document.getElementById('genderOptions');
+    
+    if (ageFilter && ageRangeContainer) {
+        ageFilter.addEventListener('change', function() {
+            ageRangeContainer.style.display = this.checked ? 'flex' : 'none';
+        });
+    }
+    
+    if (genderFilter && genderOptions) {
+        genderFilter.addEventListener('change', function() {
+            genderOptions.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+    
+    // Initialize event listeners
+    function initEventListeners() {
+        if (!dropZone || !fileInput) {
+            console.error('Required elements not found');
+            return;
+        }
+        
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        // Set up drag and drop UI feedback
+        dropZone.addEventListener('dragenter', highlight, false);
+        dropZone.addEventListener('dragover', highlight, false);
+        dropZone.addEventListener('dragleave', unhighlight, false);
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        // Note: Click handler moved to the initialize function to ensure it's set up correctly
+        
+        // Prevent double-clicks on the file input
+        fileInput.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+        
+        // Handle file input change
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                handleFiles(this.files);
+            }
+        });
+        
+        // Handle try again button
+        if (tryAgainBtn) {
+            tryAgainBtn.addEventListener('click', function() {
+                fileInput.value = '';
+                if (previewContainer) previewContainer.style.display = 'none';
+                if (dropZone) dropZone.style.display = 'flex';
+                if (searchButton) searchButton.disabled = true;
+                if (resultsContainer) resultsContainer.style.display = 'none';
+                if (noResults) noResults.style.display = 'none';
+                if (initialState) initialState.style.display = 'block';
+            });
+        }
+    }
+    
+    // Prevent default drag behaviors
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    // Highlight drop zone
+    function highlight() {
+        dropZone.style.borderColor = '#0d6efd';
+        dropZone.style.backgroundColor = 'rgba(13, 110, 253, 0.05)';
+    }
+    
+    // Remove highlight from drop zone
+    function unhighlight() {
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.backgroundColor = '';
+    }
+    
+    // Handle dropped files
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+    
+    // Handle file selection
+    function handleFiles(files) {
+        if (!files || files.length === 0) return;
+        
+        const file = files[0];
+        if (!file.type.startsWith('image/')) {
+            alert('Please upload an image file (JPG, PNG)');
+            return;
+        }
+        
+        // Check file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size should be less than 5MB');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (imagePreview) imagePreview.src = e.target.result;
+            if (dropZone) dropZone.style.display = 'none';
+            if (previewContainer) previewContainer.style.display = 'block';
+            if (searchButton) searchButton.disabled = false;
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    // Initialize event listeners
+    function initialize() {
+        initEventListeners();
+        
+        // Direct click handler for the drop zone
+        if (dropZone) {
+            dropZone.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (fileInput && !fileInput._clickInProgress) {
+                    fileInput._clickInProgress = true;
+                    fileInput.click();
+                    // Reset the flag after a short delay
+                    setTimeout(() => {
+                        fileInput._clickInProgress = false;
+                    }, 100);
+                }
+            });
+        }
+    }
+    
+    // Start initialization
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialize);
+    } else {
+        // DOM is already loaded
+        setTimeout(initialize, 0);
+    }
+    
+    // Change image
+    if (changeImageBtn) {
+        changeImageBtn.addEventListener('click', function() {
+            if (dropZone) dropZone.style.display = 'flex';
+            if (previewContainer) previewContainer.style.display = 'none';
+            if (searchButton) searchButton.disabled = true;
+            if (fileInput) fileInput.value = '';
+        });
+    }
+    
+    // Search button click
+    if (searchButton) {
+        searchButton.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+                alert('Please select an image first');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            
+            // Show loading state
+            const initialState = document.getElementById('initialState');
+            const loadingState = document.getElementById('loadingState');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const noResults = document.getElementById('noResults');
+            const noMatches = document.getElementById('noMatches');
+            
+            if (initialState) initialState.style.display = 'none';
+            if (loadingState) loadingState.style.display = 'block';
+            if (resultsContainer) resultsContainer.style.display = 'none';
+            if (noResults) noResults.style.display = 'none';
+            if (noMatches) noMatches.style.display = 'none';
+            
+            try {
+                // Create FormData and append the file and search type
+                const formData = new FormData();
+                formData.append('photo', file);
+                formData.append('search_type', 'missing'); // We're searching for missing persons in the found folder
+                
+                // Debug info
+                console.log('Sending search request...', {
+                    searchType: 'missing',
+                    file: file.name,
+                    fileSize: file.size,
+                    searchIn: 'found' // We're searching in the 'found' folder for missing persons
+                });
+                
+                // Send the search request
+                const response = await fetch('{{ url_for("search") }}', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Search response:', data);
+                
+                if (data.success) {
+                    if (data.matches && data.matches.length > 0) {
+                        // Display matches
+                        displayMatches(data.matches, data.uploaded_image);
+                    } else {
+                        // No matches found
+                        if (noMatches) noMatches.style.display = 'block';
+                        if (loadingState) loadingState.style.display = 'none';
+                        
+                        // Show debug info
+                        console.log('No matches found. Search parameters:', {
+                            searchType: data.search_type,
+                            uploadedImage: data.uploaded_image,
+                            totalImagesScanned: data.total_scanned || 0
+                        });
+                    }
+                } else {
+                    // Handle error
+                    alert(data.error || 'An error occurred during search');
+                    if (loadingState) loadingState.style.display = 'none';
+                    if (initialState) initialState.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                alert('An error occurred while searching. Please check the console for details.');
+                if (loadingState) loadingState.style.display = 'none';
+                if (initialState) initialState.style.display = 'block';
+            }
+        });
+    }
+    
+    // Try again button
+    if (tryAgainBtn) {
+        tryAgainBtn.addEventListener('click', function() {
+            if (fileInput) fileInput.value = '';
+            if (dropZone) dropZone.style.display = 'flex';
+            if (previewContainer) previewContainer.style.display = 'none';
+            if (searchButton) searchButton.disabled = true;
+            if (noResults) noResults.style.display = 'none';
+            if (initialState) initialState.style.display = 'block';
+        });
+    }
+    
+    // Perform search with the uploaded image
+    function performSearch(file) {
+        const formData = new FormData();
+        formData.append('photo', file);
+        
+        // Get DOM elements
+        const initialState = document.getElementById('initialState');
+        const loadingState = document.getElementById('loadingState');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const noResults = document.getElementById('noResults') || document.getElementById('noMatches');
+        
+        // Show loading state
+        if (initialState) initialState.style.display = 'none';
+        if (loadingState) loadingState.style.display = 'block';
+        if (resultsContainer) resultsContainer.style.display = 'none';
+        if (noResults) noResults.style.display = 'none';
+        
+        fetch('{{ url_for("search") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { 
+                    throw new Error(err.error || 'Search failed'); 
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Search results:', data);
+            if (data.success && data.matches && data.matches.length > 0) {
+                displayMatches(data.matches, data.uploaded_image);
+            } else {
+                showNoMatches();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(error.message || 'An error occurred while searching. Please try again.');
+            showNoMatches();
+        })
+        .finally(() => {
+            document.getElementById('loadingState').style.display = 'none';
+        });
+    }
+    
+    // Display matching results
+    function displayMatches(matches, uploadedImage) {
+        const matchesList = document.getElementById('matchesList');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const noResults = document.getElementById('noResults');
+        
+        // Clear previous results
+        matchesList.innerHTML = '';
+        
+        // Store the matches in the global variable with all properties
+        window.currentMatches = matches ? [...matches] : [];
+        console.log('Displaying matches, currentMatches set to:', window.currentMatches);
+        
+        // Show the uploaded image
+        const uploadedImgContainer = document.createElement('div');
+        uploadedImgContainer.className = 'col-12 mb-4';
+        uploadedImgContainer.innerHTML = `
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Uploaded Image</h6>
+                </div>
+                <div class="card-body text-center">
+                    <img src="${uploadedImage}" class="img-fluid rounded" style="max-height: 200px;" alt="Uploaded image">
+                </div>
+            </div>
+        `;
+        matchesList.appendChild(uploadedImgContainer);
+        
+        // Add each match to the results
+        if (matches && matches.length > 0) {
+            matches.forEach((match, index) => {
+                // Ensure each match has a unique ID
+                if (!match.id) {
+                    match.id = `match_${index}_${Date.now()}`;
+                }
+                
+                const matchElement = document.createElement('div');
+                matchElement.className = 'col-md-6 mb-4';
+                matchElement.innerHTML = `
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="badge bg-success">${match.similarity || '0'}% Match</span>
+                            <span class="badge bg-info">${match.gender || 'Unknown'}, ${match.age || 'N/A'}</span>
+                        </div>
+                        <div class="card-body text-center">
+                            <img src="${match.image || ''}" class="img-fluid rounded mb-3" style="max-height: 200px;" alt="Match" onerror="this.onerror=null; this.src='/static/images/placeholder.jpg';">
+                            <h5 class="card-title">${match.name || 'Unknown'}</h5>
+                            <p class="card-text text-muted">Last seen: ${match.last_seen || 'Unknown'}</p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="window.viewDetails('${match.id}')">
+                                <i class="fas fa-info-circle me-1"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+                `;
+                matchesList.appendChild(matchElement);
+            });
+            
+            // Show results container
+            if (noResults) noResults.classList.add('d-none');
+            if (resultsContainer) resultsContainer.style.display = 'block';
+        } else {
+            // No matches found
+            if (noResults) noResults.classList.remove('d-none');
+            if (resultsContainer) resultsContainer.style.display = 'none';
+        }
+    }
+    
+    // Show no matches message
+    function showNoMatches() {
+        const noResults = document.getElementById('noResults');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const noMatches = document.getElementById('noMatches');
+        
+        if (noResults) noResults.classList.add('d-none');
+        if (resultsContainer) resultsContainer.style.display = 'none';
+        if (noMatches) noMatches.style.display = 'block';
+    }
+    
+    // Display search results (kept for backward compatibility)
+    function displayResults(results) {
+        if (!results || !Array.isArray(results) || results.length === 0) {
+            showNoMatches();
+            return;
+        }
+        
+        // Show results container
+        if (resultsContainer) resultsContainer.style.display = 'block';
+        if (initialState) initialState.style.display = 'none';
+        if (loadingState) loadingState.style.display = 'none';
+        if (noResults) noResults.style.display = 'none';
+        
+        // Clear previous results
+        if (matchesList) matchesList.innerHTML = '';
+        
+        // Add each result to the list
+        results.forEach(result => {
+            const template = document.getElementById('resultTemplate');
+            if (!template) return;
+            
+            const clone = template.content.cloneNode(true);
+            const card = clone.querySelector('.result-item');
+            if (!card) return;
+            
+            // Update card content with result data
+            const img = card.querySelector('.card-img-top');
+            const title = card.querySelector('.card-title');
+            const age = card.querySelector('.card-age');
+            const gender = card.querySelector('.card-gender');
+            const lastSeen = card.querySelector('.last-seen');
+            const location = card.querySelector('.card-location');
+            const matchPercent = card.querySelector('.match-percentage');
+            
+            if (img) img.src = result.image || '/static/images/default-profile.png';
+            if (title) title.textContent = result.name || 'Unknown';
+            if (age) age.textContent = result.age ? `${result.age} years old` : 'Age not specified';
+            if (gender) gender.textContent = result.gender || 'Not specified';
+            if (lastSeen) lastSeen.textContent = result.last_seen || 'Date not available';
+            if (location) location.textContent = result.location || 'Location not available';
+            if (matchPercent) matchPercent.textContent = result.similarity ? `${result.similarity}% match` : '';
+            
+            // Set up event listeners for action buttons
+            const viewDetailsBtn = card.querySelector('.view-details');
+            const reportFoundBtn = card.querySelector('.report-found');
+            
+            if (viewDetailsBtn) {
+                viewDetailsBtn.addEventListener('click', function() {
+                    alert(`Viewing details for ${result.name || 'this person'} (ID: ${result.id || 'N/A'})`);
+                });
+            }
+            
+            if (reportFoundBtn) {
+                reportFoundBtn.addEventListener('click', function() {
+                    if (confirm(`Are you sure you want to report that ${result.name || 'this person'} has been found?`)) {
+                        alert(`Thank you! Authorities have been notified about ${result.name || 'this person'}.`);
+                    }
+                });
+            }
+            
+            if (matchesList) {
+                matchesList.appendChild(card);
+            }
+        });
+    }
+    
+// Global function to view details of a match
+window.viewDetails = async function(matchId) {
+    console.log('=== View Details Debug ===');
+    console.log('Match ID clicked:', matchId);
+    console.log('Current matches array:', window.currentMatches);
+    
+    // Make sure currentMatches is an array
+    if (!Array.isArray(window.currentMatches)) {
+        console.error('currentMatches is not an array:', window.currentMatches);
+        window.currentMatches = [];
+    }
+    
+    // Try to find the match by ID
+    const match = window.currentMatches.find(m => m && (m.id === matchId || m.matchId === matchId));
+    
+    // If not found, try to find by any property that might contain the ID
+    if (!match) {
+        console.log('Match not found by direct ID, trying alternative lookup...');
+        for (const m of window.currentMatches) {
+            if (m && (m.id === matchId || 
+                     m.matchId === matchId ||
+                     (m.image && m.image.includes(matchId)) ||
+                     (m.filename && m.filename.includes(matchId.split('_')[0])))) {
+                console.log('Found alternative match:', m);
+                return await showMatchDetails(m);
+            }
+        }
+        
+        console.error('Match not found in currentMatches');
+        alert('Match details not found. The search results may have been cleared. Please perform a new search and try again.');
+        return;
+    }
+    
+    await showMatchDetails(match);
+};
+
+// Helper function to show match details
+async function showMatchDetails(match) {
+    console.log('Showing details for match:', match);
+    
+    // Remove any existing modals first
+    removeAllModals();
+    
+    // Create a single container for our modal
+    const modalContainer = document.createElement('div');
+    modalContainer.id = 'matchModalContainer';
+    document.body.appendChild(modalContainer);
+    
+    // Create and show the modal with loading state
+    const modalHtml = `
+        <div class="modal fade" id="matchDetailsModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">Loading Details...</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center py-5">
+                        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h4 class="mt-3">Loading Match Details</h4>
+                        <p class="text-muted">Please wait while we fetch the information...</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    
+    // Set the modal HTML
+    modalContainer.innerHTML = modalHtml;
+    
+    // Initialize and show the modal
+    const detailsModal = new bootstrap.Modal(document.getElementById('matchDetailsModal'), {
+        backdrop: 'static',
+        keyboard: false
+    });
+    detailsModal.show();
+    
+    try {
+            
+            // Get the filename from the match data, handling different possible properties
+            let filename = match.filename || '';
+            
+            // If we don't have a filename, try to extract it from the image URL
+            if (!filename && match.image) {
+                const url = new URL(match.image, window.location.origin);
+                filename = url.pathname.split('/').pop();
+            }
+            
+            // If we still don't have a filename, use the ID (removing the timestamp if present)
+            if (!filename && match.id) {
+                const parts = match.id.split('_');
+                if (parts.length > 1) {
+                    // Reconstruct the filename from the ID (without the timestamp at the end)
+                    filename = parts.slice(0, -1).join('_') + '.jpg';
+                } else {
+                    filename = match.id + '.jpg';
+                }
+            }
+            
+            console.log('Looking up record for filename:', filename);
+            
+            // Fetch the full record details
+            const response = await fetch('/get_record_details', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    image_path: filename
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch record details');
+            }
+            
+            const data = await response.json();
+            const record = data.record || {};
+            
+            // Format the date
+            const formatDate = (dateString) => {
+                if (!dateString) return 'Unknown';
+                try {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                } catch (e) {
+                    return 'Unknown';
+                }
+            };
+
+            // Create the details modal HTML
+            const modalHtml = `
+            <div class="modal fade" id="matchDetailsModal" tabindex="-1" aria-labelledby="matchDetailsModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">${record.name || 'Match Details'}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-0">
+                            <div class="container-fluid p-0">
+                                <div class="row g-0">
+                                    <!-- Left side - Image -->
+                                    <div class="col-md-5 p-4 d-flex flex-column">
+                                        <div class="text-center mb-3">
+                                            <img src="${match.image}" class="img-fluid rounded shadow-sm" alt="Match" style="max-height: 300px; width: auto; max-width: 100%;">
+                                        </div>
+                                        <div class="text-center mt-auto">
+                                            <span class="badge bg-success fs-6 p-2 mb-2">${match.similarity}% Match</span>
+                                            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                                <span class="badge bg-info text-dark">${record.gender || 'Unknown'}</span>
+                                                <span class="badge bg-info text-dark">${record.age || 'N/A'} years</span>
+                                                <span class="badge ${record.type === 'missing' ? 'bg-danger' : 'bg-success'}">
+                                                    ${record.type === 'missing' ? 'Missing Person' : 'Found Person'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Right side - Details -->
+                                    <div class="col-md-7 p-4 bg-light">
+                                        <div class="mb-4">
+                                            <h3 class="mb-2">${record.name || 'Unknown'}</h3>
+                                            <p class="text-muted mb-3">
+                                                <i class="fas fa-calendar-alt me-2"></i>
+                                                ${record.type === 'missing' ? 'Missing since' : 'Found on'}: 
+                                                <strong>${record.last_seen_date ? formatDate(record.last_seen_date) : 'Unknown date'}</strong>
+                                            </p>
+                                            <hr>
+                                        </div>
+                                        
+                                        <div class="row g-3 mb-4">
+                                            <div class="col-md-6">
+                                                <div class="card h-100 border-0 shadow-sm">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title text-primary"><i class="fas fa-user-circle me-2"></i>Personal Information</h6>
+                                                        <ul class="list-unstyled mb-0">
+                                                            <li class="mb-2"><strong>Age:</strong> ${record.age || 'N/A'}</li>
+                                                            <li class="mb-2"><strong>Gender:</strong> ${record.gender || 'N/A'}</li>
+                                                            <li class="mb-2">
+                                                                <strong>Contact:</strong> 
+                                                                ${record.contact ? 
+                                                                    `<a href="tel:${record.contact}" class="text-decoration-none">
+                                                                        <i class="fas fa-phone me-1"></i>${record.contact}
+                                                                    </a>` : 
+                                                                    'Not provided'}
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card h-100 border-0 shadow-sm">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title text-primary"><i class="fas fa-map-marker-alt me-2"></i>Location</h6>
+                                                        <ul class="list-unstyled mb-0">
+                                                            <li class="mb-2">
+                                                                <strong>Last Seen:</strong> 
+                                                                <div>${record.location || 'Unknown location'}</div>
+                                                            </li>
+                                                            <li class="mb-2">
+                                                                <strong>Reported On:</strong> 
+                                                                <div>${record.created_at ? formatDate(record.created_at) : 'N/A'}</div>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        ${record.description ? `
+                                            <div class="card border-0 shadow-sm mb-3">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-primary"><i class="fas fa-info-circle me-2"></i>Additional Information</h6>
+                                                    <div class="p-3 bg-white rounded">
+                                                        ${record.description}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light border-top">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i> Close
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="reportMatch('${match.id}')">
+                                <i class="fas fa-flag me-1"></i> Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            
+            // Update the existing modal with the details content
+            const modalElement = document.getElementById('matchDetailsModal');
+            if (modalElement) {
+                // Replace the modal content
+                modalElement.querySelector('.modal-content').outerHTML = `
+                    <div class="modal-content">
+                        ${modalHtml.split('<div class="modal-content">')[1].split('</div>').slice(0, -1).join('</div>')}
+                    </div>`;
+                
+                // Re-enable closing the modal
+                const updatedModal = new bootstrap.Modal(modalElement, {
+                    backdrop: true,
+                    keyboard: true
+                });
+                
+                // Handle modal cleanup when closed
+                const handleModalClose = () => {
+                    updatedModal.hide();
+                    removeAllModals();
+                };
+                
+                // Add event listener for when modal is hidden
+                modalElement.addEventListener('hidden.bs.modal', handleModalClose);
+                
+                // Handle close buttons
+                const closeButtons = modalElement.querySelectorAll('[data-bs-dismiss="modal"]');
+                closeButtons.forEach(button => {
+                    button.onclick = handleModalClose;
+                });
+            }
+        } catch (error) {
+            console.error('Error loading match details:', error);
+            alert('Error loading match details. Please try again.');
+            
+            // Remove the modal container if it exists
+            if (modalContainer && modalContainer.parentNode) {
+                modalContainer.parentNode.removeChild(modalContainer);
+                document.body.removeChild(modalContainer);
+            }
+        }
+    }
+    
+    // Report a match - global function
+    window.reportMatch = function(matchId) {
+        // Here you would typically send a report to your backend
+        alert('Report submitted for match ID: ' + matchId);
+        // Close the modal after reporting
+        const modal = bootstrap.Modal.getInstance(document.getElementById('matchDetailsModal'));
+        if (modal) modal.hide();
+    }
+    
+    // Store current matches for details view
+    window.currentMatches = [];
+    
+    // Store the original displayMatches function
+    const originalDisplayMatches = window.displayMatches;
+    
+    // Override the displayMatches function to store matches
+    window.displayMatches = function(matches, uploadedImage) {
+        console.log('Storing matches in currentMatches:', matches);
+        // Make a deep copy of the matches array to prevent reference issues
+        window.currentMatches = JSON.parse(JSON.stringify(matches || []));
+        console.log('Current matches after storing:', window.currentMatches);
+        return originalDisplayMatches(matches, uploadedImage);
+    };
+    
+    // Also update the displayResults function to store matches
+    const originalDisplayResults = window.displayResults;
+    window.displayResults = function(results) {
+        if (results && Array.isArray(results)) {
+            console.log('Storing results in currentMatches:', results);
+            window.currentMatches = JSON.parse(JSON.stringify(results));
+            console.log('Current matches after storing results:', window.currentMatches);
+        }
+        return originalDisplayResults(results);
+    };
+    
+    // Function to remove all modals
+    function removeAllModals() {
+        const modals = document.querySelectorAll('.modal, .modal-backdrop');
+        modals.forEach(modal => {
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+            }
+        });
+        // Also remove any modal containers we created
+        const containers = document.querySelectorAll('#matchModalContainer');
+        containers.forEach(container => {
+            if (container.parentNode) {
+                container.parentNode.removeChild(container);
+            }
+        });
+    }
+    
+    // Initialize tooltips if Bootstrap is available
+    if (typeof bootstrap !== 'undefined') {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+});
+
+</script>
+
+<style>
+ .upload-area {
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    cursor: pointer;
+ }
+
+.result-item {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(0,0,0,0.125);
+}
+
+.result-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+}
+
+#searchResults {
+    scrollbar-width: thin;
+    scrollbar-color: #adb5bd #f8f9fa;
+}
+
+#searchResults::-webkit-scrollbar {
+    width: 6px;
+}
+
+#searchResults::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+#searchResults::-webkit-scrollbar-thumb {
+    background-color: #adb5bd;
+    border-radius: 10px;
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+</style>
+{% endblock %}

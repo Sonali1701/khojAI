@@ -1,0 +1,61 @@
+services:
+  # Web Service
+  - type: web
+    name: age-progression-app
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    healthCheckPath: /
+    
+    # Environment variables
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: MAX_CONTENT_LENGTH
+        value: 16777216  # 16MB max upload
+    
+    # Build configuration
+    buildContext: .
+    
+    # Resource limits for ML processing
+    disk:
+      name: age-progression-disk
+      mountPath: /app/uploads
+      sizeGB: 10
+    
+    # Auto-scaling
+    autoDeploy: true
+    
+    # Health check
+    healthCheck:
+      path: /
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      
+  # Background service for model loading (optional)
+  - type: web
+    name: age-progression-worker
+    env: python
+    plan: free
+    startCommand: python -c "print('Worker ready')"
+    
+    # Larger instance for ML processing
+    instanceType: standard
+    instanceCount: 1
+    
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: WORKER_TYPE
+        value: age-progression
+
+# Global settings
+version: "1"
+build:
+  dockerfilePath: ./Dockerfile

@@ -1,0 +1,1156 @@
+{% extends "base.html" %}
+
+{% block title %}Age Simulation - KhojAI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-5">
+            <div class="card-header bg-primary text-white">
+                <h2 class="h4 mb-0"><i class="fas fa-hourglass-half me-2"></i>Age Progression Simulation</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <form id="simulateForm" method="POST" enctype="multipart/form-data" action="{{ url_for('simulate') }}">
+                            <div class="upload-area p-4 border rounded text-center" style="min-height: 300px;">
+                                <div id="dropZone" class="h-100 d-flex flex-column justify-content-center align-items-center" 
+                                     style="border: 2px dashed #ccc; border-radius: 5px; cursor: pointer;"
+                                     onclick="document.getElementById('uploadImage').click();">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                    <h5>Upload a photo to simulate aging</h5>
+                                    <p class="text-muted small mb-0">Drag & drop an image here or click to browse</p>
+                                    <p class="text-muted small">(JPG, PNG, Max 5MB)</p>
+                                </div>
+                                <input type="file" id="uploadImage" name="photo" style="display: none;" accept="image/*">
+                                <div id="previewContainer" class="mt-3 text-center" style="display: none;">
+                                    <img id="imagePreview" src="#" alt="Preview" class="img-fluid rounded" style="max-height: 250px;">
+                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="changeImage">
+                                        <i class="fas fa-sync-alt me-1"></i> Change Image
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <label for="ageRange" class="form-label">Age Progression: <span id="ageValue">10</span> years</label>
+                                <input type="range" class="form-range" min="5" max="50" step="5" id="ageRange" name="years" value="10">
+                                <div class="d-flex justify-content-between">
+                                    <small>+5 years</small>
+                                    <small>+50 years</small>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mt-3" id="simulateButton" disabled>
+                                <i class="fas fa-magic me-2"></i> Simulate Aging
+                            </button>
+                            <input type="hidden" id="imageData" name="image_data">
+                        </form>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="result-container text-center p-4 border rounded" style="min-height: 400px;">
+                            <div id="initialState" class="h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-image fa-4x text-muted mb-3 opacity-25"></i>
+                                <h5>Simulation Results</h5>
+                                <p class="text-muted">Upload a photo and adjust the age slider to see how the person might look in the future.</p>
+                            </div>
+                            
+                            <div id="resultState" style="display: {% if result_image %}block{% else %}none{% endif %};">
+                                <h5 class="mb-4">Age Progression Simulation</h5>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="card">
+                                            <div class="card-header bg-light py-2">
+                                                <small>Original</small>
+                                            </div>
+                                            <div class="card-body p-2">
+                                                <img id="originalImage" src="{{ url_for('static', filename=result_image.replace('static/', '')) if result_image else '#' }}" alt="Original" class="img-fluid rounded">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="card">
+                                            <div class="card-header bg-light py-2">
+                                                <small>Simulated Age: +<span id="simulatedAge">10</span> years</small>
+                                            </div>
+                                            <div class="card-body p-2">
+                                                <img id="simulatedImage" src="{{ url_for('static', filename=result_image.replace('static/', '')) if result_image else '#' }}" alt="Simulated" class="img-fluid rounded">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <button class="btn btn-outline-primary me-2" id="downloadBtn">
+                                        <i class="fas fa-download me-1"></i> Download Result
+                                    </button>
+                                    <button class="btn btn-outline-secondary" id="tryAgainBtn">
+                                        <i class="fas fa-redo me-1"></i> Try Another
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="loadingState" class="text-center py-5" style="display: none;">
+                                <div class="spinner-border text-primary mb-3" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p>Generating age progression...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mb-5">
+            <div class="card-header bg-light">
+                <h3 class="h5 mb-0">How It Works</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="text-center p-3">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; margin-bottom: 1rem;">
+                                <i class="fas fa-upload fa-2x text-primary"></i>
+                            </div>
+                            <h5>1. Upload Photo</h5>
+                            <p class="small text-muted mb-0">Upload a clear frontal face photo for best results.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="text-center p-3">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; margin-bottom: 1rem;">
+                                <i class="fas fa-sliders-h fa-2x text-primary"></i>
+                            </div>
+                            <h5>2. Adjust Age</h5>
+                            <p class="small text-muted mb-0">Use the slider to select how many years to add.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; margin-bottom: 1rem;">
+                                <i class="fas fa-image fa-2x text-primary"></i>
+                            </div>
+                            <h5>3. View & Download</h5>
+                            <p class="small text-muted mb-0">See the result and download if needed.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded');
+        
+        // Get DOM elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('uploadImage');
+        const previewContainer = document.getElementById('previewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        const changeImageBtn = document.getElementById('changeImage');
+        const simulateButton = document.getElementById('simulateButton');
+        const loadingState = document.getElementById('loadingState');
+        const initialState = document.getElementById('initialState');
+        const resultState = document.getElementById('resultState');
+        const simulatedImage = document.getElementById('simulatedImage');
+        const ageRange = document.getElementById('ageRange');
+        const ageValue = document.getElementById('ageValue');
+        const simulateForm = document.getElementById('simulateForm');
+        
+        // Function to handle file selection and preview
+        function handleFiles(files) {
+            console.log('Handling files:', files);
+            
+            if (!files || files.length === 0) {
+                console.log('No files selected');
+                return;
+            }
+            
+            const file = files[0];
+            if (!file.type.match('image.*')) {
+                alert('Please select an image file (JPEG, PNG, etc.)');
+                return;
+            }
+            
+            // Show preview container and hide drop zone
+            if (previewContainer) previewContainer.style.display = 'block';
+            if (dropZone) dropZone.style.display = 'none';
+            
+            // Enable simulate button
+            if (simulateButton) simulateButton.disabled = false;
+            
+            // Create a FileReader to read the image file
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                // Set the source of the preview image
+                if (imagePreview) {
+                    imagePreview.src = e.target.result;
+                    console.log('Image preview source set');
+                }
+            };
+            
+            // Read the image file as a data URL
+            reader.readAsDataURL(file);
+        }
+        
+        // Function to prevent default drag behaviors
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Function to highlight drop zone
+        function highlight(e) {
+            preventDefaults(e);
+            if (dropZone) dropZone.classList.add('bg-light');
+        }
+
+        // Function to remove highlight from drop zone
+        function unhighlight(e) {
+            preventDefaults(e);
+            if (dropZone) dropZone.classList.remove('bg-light');
+        }
+
+        // Function to handle dropped files
+        function handleDrop(e) {
+            preventDefaults(e);
+            unhighlight(e);
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                handleFiles(files);
+            }
+            handleFiles(files);
+        }
+
+        // Function to handle file selection
+        function handleFiles(files) {
+            console.log('handleFiles called with:', files);
+            if (files && files.length > 0) {
+                const file = files[0];
+                console.log('Processing file:', file.name, file.type);
+                
+                // Check if it's an image
+                if (!file.type.startsWith('image/')) {
+                    console.warn('Invalid file type:', file.type);
+                    alert('Please upload an image file (JPG, PNG)');
+                    return;
+                }
+                
+                // Show loading state
+                if (loadingState) loadingState.style.display = 'block';
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    console.log('File loaded successfully');
+                    
+                    // Update the preview image
+                    if (imagePreview) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                    }
+                    
+                    // Set the original image for the result
+                    if (originalImage) {
+                        originalImage.src = e.target.result;
+                    }
+                    
+                    // Update UI
+                    if (dropZone) dropZone.style.display = 'none';
+                    if (previewContainer) {
+                        previewContainer.style.display = 'block';
+                        previewContainer.style.opacity = '1';
+                        previewContainer.style.visibility = 'visible';
+                    }
+                    
+                    // Enable the simulate button
+                    if (simulateButton) simulateButton.disabled = false;
+                    
+                    // Hide loading state
+                    if (loadingState) loadingState.style.display = 'none';
+                };
+                
+                reader.onerror = function(error) {
+                    console.error('Error reading file:', error);
+                    alert('Error reading the file. Please try again.');
+                    if (loadingState) loadingState.style.display = 'none';
+                };
+                
+                // Start reading the file
+                reader.readAsDataURL(file);
+            } else {
+                console.warn('No files provided');
+            }
+        }
+
+        // Set up drag and drop events
+        if (dropZone) {
+            // Prevent default drag behaviors
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            // Highlight drop zone when item is dragged over it
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+
+            // Remove highlight when item leaves drop zone
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+
+            // Handle file drop
+            dropZone.addEventListener('drop', handleDrop, false);
+            
+            // Handle click on dropzone to trigger file input
+            dropZone.addEventListener('click', function() {
+                if (fileInput) fileInput.click();
+            });
+        }
+
+        // Handle file input change
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                console.log('File input changed:', this.files);
+                if (this.files && this.files.length > 0) {
+                    handleFiles(this.files);
+                }
+            });
+        }
+
+        // Handle change image button
+        if (changeImageBtn) {
+            changeImageBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (previewContainer) previewContainer.style.display = 'none';
+                if (dropZone) dropZone.style.display = 'flex';
+                if (fileInput) fileInput.value = ''; // Reset file input
+                if (simulateButton) simulateButton.disabled = true;
+            });
+        }
+
+        // Update age value display when slider changes
+        if (ageRange && ageValue) {
+            ageRange.addEventListener('input', function() {
+                ageValue.textContent = this.value;
+            });
+            // Initialize the display
+            ageValue.textContent = ageRange.value;
+        }
+
+        // Handle form submission
+        if (simulateForm) {
+            simulateForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('Form submitted');
+                
+                // Show loading state
+                if (loadingState) loadingState.style.display = 'block';
+                if (resultState) resultState.style.display = 'none';
+                if (initialState) initialState.style.display = 'none';
+
+                // Create FormData object
+                const formData = new FormData();
+                
+                // Add the file to FormData if available
+                if (fileInput && fileInput.files.length > 0) {
+                    formData.append('photo', fileInput.files[0]);
+                } else {
+                    alert('Please select an image first');
+                    if (loadingState) loadingState.style.display = 'none';
+                    if (initialState) initialState.style.display = 'block';
+                    return;
+                }
+                
+                // Add years to FormData
+                formData.append('years', ageRange ? ageRange.value : '10');
+                
+                // Send AJAX request
+                fetch(simulateForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.error || 'Server error');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response:', data);
+                    
+                    if (data.success) {
+                        if (resultState) {
+                            // Update the result state with the processed image
+                            if (simulatedImage) {
+                                // Add timestamp to prevent caching
+                                const timestamp = new Date().getTime();
+                                simulatedImage.src = data.image_path + (data.image_path.includes('?') ? '&' : '?') + 't=' + timestamp;
+                                simulatedImage.alt = 'Simulated age: ' + (data.target_age || 'N/A');
+                            }
+                            
+                            const simulatedAgeElement = document.getElementById('simulatedAge');
+                            if (simulatedAgeElement) {
+                                simulatedAgeElement.textContent = data.years || '10';
+                            }
+                            
+                            // Show result and hide loading
+                            resultState.style.display = 'block';
+                            if (loadingState) loadingState.style.display = 'none';
+                            
+                            // Scroll to results
+                            resultState.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    } else {
+                        throw new Error(data.error || 'Failed to process image');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error: ' + (error.message || 'An error occurred while processing the image.'));
+                    if (loadingState) loadingState.style.display = 'none';
+                    if (initialState) initialState.style.display = 'block';
+                });
+            });
+        }
+        
+        // Handle try again button
+        const tryAgainBtn = document.getElementById('tryAgainBtn');
+        if (tryAgainBtn) {
+            tryAgainBtn.addEventListener('click', function() {
+                if (previewContainer) previewContainer.style.display = 'none';
+                if (dropZone) dropZone.style.display = 'flex';
+                if (fileInput) fileInput.value = '';
+                if (simulateButton) simulateButton.disabled = true;
+                if (resultState) resultState.style.display = 'none';
+                if (initialState) initialState.style.display = 'block';
+                
+                // Reset form
+                if (simulateForm) simulateForm.reset();
+                if (ageRange && ageValue) {
+                    ageRange.value = 10;
+                    ageValue.textContent = '10';
+                }
+            });
+        }
+        
+        // Handle download button
+        const downloadBtn = document.getElementById('downloadBtn');
+        if (downloadBtn && simulatedImage) {
+            downloadBtn.addEventListener('click', function() {
+                if (simulatedImage.src && !simulatedImage.src.includes('data:,')) {
+                    const link = document.createElement('a');
+                    link.href = simulatedImage.src;
+                    link.download = 'age-progression-result-' + new Date().getTime() + '.jpg';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else {
+                    alert('No processed image available to download');
+                }
+            });
+        }
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            // Set up drag and drop UI feedback
+            dropZone.addEventListener('dragenter', highlight, false);
+            dropZone.addEventListener('dragover', highlight, false);
+            dropZone.addEventListener('dragleave', unhighlight, false);
+            dropZone.addEventListener('drop', handleDrop, false);
+            
+            // Handle click on dropzone to trigger file input
+            dropZone.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (fileInput) fileInput.click();
+            });
+        }
+        
+        // Handle file input change
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                console.log('File input changed:', this.files);
+                handleFiles(this.files);
+            }, false);
+        }
+        
+        // Handle change image button
+        if (changeImageBtn) {
+            changeImageBtn.addEventListener('click', function() {
+                if (dropZone) dropZone.style.display = 'flex';
+                if (previewContainer) previewContainer.style.display = 'none';
+                if (simulateButton) simulateButton.disabled = true;
+                if (fileInput) fileInput.value = '';
+            });
+        }
+        
+        // Handle age range slider
+        if (ageRange) {
+            ageRange.addEventListener('input', function() {
+                if (ageValue) ageValue.textContent = this.value;
+            });
+        }
+        
+        // Handle form submission
+        if (simulateForm) {
+            simulateForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('Form submitted');
+                
+                // Check if a file is selected
+                if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                    alert('Please select an image first');
+                    return;
+                }
+                
+                console.log('File selected, submitting form...');
+                
+                // Show loading state
+                if (loadingState) loadingState.style.display = 'block';
+                if (initialState) initialState.style.display = 'none';
+                if (resultState) resultState.style.display = 'none';
+                
+                // Create FormData object
+                const formData = new FormData(this);
+                
+                // Submit the form via fetch
+                fetch('{{ url_for("simulate") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    console.log('Response received:', response);
+                    if (!response.ok) {
+                        return response.json().then(err => { 
+                            console.error('Error response:', err);
+                            throw err; 
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Success:', data);
+                    if (data.success && data.image_path) {
+                        if (simulatedImage) {
+                            // Add a timestamp to prevent caching
+                            simulatedImage.src = data.image_path + '?t=' + new Date().getTime();
+                            simulatedImage.alt = 'Simulated age progression';
+                            if (resultState) {
+                                resultState.style.display = 'block';
+                                const ageDisplay = document.getElementById('simulatedAge');
+                                if (ageDisplay) {
+                                    ageDisplay.textContent = data.years || '10';
+                                }
+                            }
+                            if (loadingState) loadingState.style.display = 'none';
+                            resultState.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    } else {
+                        throw new Error(data.error || 'Unknown error occurred');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error: ' + (error.message || 'An error occurred while processing the image.'));
+                    if (initialState) initialState.style.display = 'flex';
+                })
+                .finally(() => {
+                    if (loadingState) loadingState.style.display = 'none';
+                });
+            });
+        }
+        
+        // Function to handle file selection
+        function handleFiles(files) {
+            if (!files || files.length === 0) return;
+            
+            const file = files[0];
+            
+            // Check if the file is an image
+            if (!file.type.match('image.*')) {
+                alert('Please select an image file');
+                return;
+            }
+            
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size should be less than 5MB');
+                return;
+            }
+            
+            // Create a FileReader to read the image
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                if (imagePreview) {
+                    imagePreview.src = e.target.result;
+                    if (originalImage) {
+                        originalImage.src = e.target.result;
+                    }
+                }
+                
+                // Show preview and hide dropzone
+                if (previewContainer) previewContainer.style.display = 'block';
+                if (dropZone) dropZone.style.display = 'none';
+                if (simulateButton) simulateButton.disabled = false;
+                
+                // Show the result state if it was hidden
+                if (resultState) resultState.style.display = 'block';
+            };
+            
+            // Read the image file
+            reader.readAsDataURL(file);
+        }
+            }
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // Update age value display
+        if (ageRange && ageValue) {
+            ageRange.addEventListener('input', function() {
+                ageValue.textContent = this.value;
+                const simulatedAge = document.getElementById('simulatedAge');
+                if (simulatedAge) {
+                    simulatedAge.textContent = this.value;
+                }
+            });
+        }
+    
+        // Set up drag and drop events
+        if (dropZone) {
+            // Highlight drop zone when item is dragged over it
+            dropZone.addEventListener('dragenter', highlight, false);
+            dropZone.addEventListener('dragover', highlight, false);
+            dropZone.addEventListener('dragleave', unhighlight, false);
+            dropZone.addEventListener('drop', handleDrop, false);
+            
+            // Handle click on dropzone to trigger file input
+            dropZone.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (fileInput) fileInput.click();
+            });
+        }
+        
+        // Handle file input change
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                console.log('File input changed:', this.files);
+                handleFiles(this.files);
+            });
+        }
+        
+        // Handle change image button
+        if (changeImageBtn) {
+            changeImageBtn.addEventListener('click', function() {
+                if (dropZone) dropZone.style.display = 'flex';
+                if (previewContainer) previewContainer.style.display = 'none';
+                if (simulateButton) simulateButton.disabled = true;
+                if (fileInput) fileInput.value = '';
+            });
+        }
+        
+        // Handle form submission
+        if (simulateForm) {
+            simulateForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('Form submitted');
+                
+                // Check if a file is selected
+                if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                    alert('Please select an image first');
+                    return;
+                }
+                
+                console.log('File selected, submitting form...');
+                
+                // Show loading state
+                if (loadingState) loadingState.style.display = 'block';
+                if (initialState) initialState.style.display = 'none';
+                if (resultState) resultState.style.display = 'none';
+                
+                // Create FormData object
+                const formData = new FormData(this);
+                
+                // Log form data for debugging
+                for (let [key, value] of formData.entries()) {
+                    console.log(key, value);
+                }
+                
+                // Submit the form via fetch
+                fetch('{{ url_for("simulate") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    console.log('Response received:', response);
+                    if (!response.ok) {
+                        return response.json().then(err => { 
+                            console.error('Error response:', err);
+                            throw err; 
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Success:', data);
+                    if (data.success && data.image_path) {
+                        if (simulatedImage) {
+                            // Add a timestamp to prevent caching
+                            simulatedImage.src = data.image_path + '?t=' + new Date().getTime();
+                            simulatedImage.alt = 'Simulated age progression';
+                            if (resultState) {
+                                resultState.style.display = 'block';
+                                const ageDisplay = document.getElementById('simulatedAge');
+                                if (ageDisplay) {
+                                    ageDisplay.textContent = data.years || '10';
+                                }
+                            }
+                            if (loadingState) loadingState.style.display = 'none';
+                            resultState.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    } else {
+                        throw new Error(data.error || 'Unknown error occurred');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error: ' + (error.message || 'An error occurred while processing the image.'));
+                    if (initialState) initialState.style.display = 'flex';
+                })
+                .finally(() => {
+                    if (loadingState) loadingState.style.display = 'none';
+                });
+            });
+        }
+    
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            console.log('File input changed:', this.files);
+            handleFiles(this.files);
+        });
+    }
+    
+    function handleFiles(files) {
+        console.log('handleFiles called with:', files);
+        if (files && files.length > 0) {
+            const file = files[0];
+            console.log('Processing file:', file.name, file.type);
+            
+            // Check if it's an image
+            if (!file.type.startsWith('image/')) {
+                console.warn('Invalid file type:', file.type);
+                alert('Please upload an image file (JPG, PNG)');
+                return;
+            }
+            
+            // Show loading state
+            if (loadingState) loadingState.style.display = 'block';
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                console.log('File loaded successfully');
+                
+                // Update the preview image
+                if (imagePreview) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                
+                // Set the original image for the result
+                if (originalImage) {
+                    originalImage.src = e.target.result;
+                }
+                
+                // Update UI
+                if (dropZone) dropZone.style.display = 'none';
+                if (previewContainer) {
+                    previewContainer.style.display = 'block';
+                    previewContainer.style.opacity = '1';
+                    previewContainer.style.visibility = 'visible';
+                }
+                
+                // Enable the simulate button
+                if (simulateButton) simulateButton.disabled = false;
+                
+                // Hide loading state
+                if (loadingState) loadingState.style.display = 'none';
+                
+                console.log('Preview should be visible now');
+            };
+            
+            reader.onerror = function(error) {
+                console.error('Error reading file:', error);
+                alert('Error reading the file. Please try again.');
+                if (loadingState) loadingState.style.display = 'none';
+            };
+            
+            // Start reading the file
+            reader.readAsDataURL(file);
+        } else {
+            console.warn('No files provided');
+        }
+    }
+    
+    // Change image
+    if (changeImageBtn) {
+        changeImageBtn.addEventListener('click', function() {
+            if (dropZone) dropZone.style.display = 'flex';
+            if (previewContainer) previewContainer.style.display = 'none';
+            if (simulateButton) simulateButton.disabled = true;
+            if (fileInput) fileInput.value = '';
+        });
+    }
+    
+    // Handle form submission
+    if (simulateForm) {
+        simulateForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form submitted');
+            
+            // Check if a file is selected
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                alert('Please select an image first');
+                return;
+            }
+            
+            console.log('File selected, submitting form...');
+            
+            // Show loading state
+            if (loadingState) loadingState.style.display = 'block';
+            if (initialState) initialState.style.display = 'none';
+            if (resultState) resultState.style.display = 'none';
+            
+            // Create FormData object
+            const formData = new FormData(this);
+            
+            // Log form data for debugging
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
+            
+            // Submit the form via fetch
+            fetch('{{ url_for("simulate") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                console.log('Response received:', response);
+                if (!response.ok) {
+                    return response.json().then(err => { 
+                        console.error('Error response:', err);
+                        throw err; 
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                if (data.success && data.image_path) {
+                    if (simulatedImage) {
+                        // Add a timestamp to prevent caching
+                        simulatedImage.src = data.image_path + '?t=' + new Date().getTime();
+                        simulatedImage.alt = 'Simulated age progression';
+                        if (resultState) {
+                            resultState.style.display = 'block';
+                            const ageDisplay = document.getElementById('simulatedAge');
+                            if (ageDisplay) {
+                                ageDisplay.textContent = data.years || '10';
+                            }
+                        }
+                        if (loadingState) loadingState.style.display = 'none';
+                        resultState.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } else {
+                    throw new Error(data.error || 'Unknown error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error: ' + (error.message || 'An error occurred while processing the image.'));
+                if (initialState) initialState.style.display = 'flex';
+            })
+            .finally(() => {
+                if (loadingState) loadingState.style.display = 'none';
+            });
+        });
+    }
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        dropZone.style.borderColor = '#0d6efd';
+        dropZone.style.backgroundColor = 'rgba(13, 110, 253, 0.05)';
+    }
+    
+    function unhighlight() {
+        dropZone.style.borderColor = '#ccc';
+        dropZone.style.backgroundColor = '';
+    }
+    
+    // Handle dropped files
+    dropZone.addEventListener('drop', handleDrop, false);
+    
+    // Handle click on dropzone to trigger file input
+    dropZone.addEventListener('click', function(e) {
+        e.stopPropagation();
+        fileInput.click();
+    });
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+    
+    fileInput.addEventListener('change', function(e) {
+        console.log('File input changed:', this.files);
+        handleFiles(this.files);
+    });
+    
+    function handleFiles(files) {
+        console.log('handleFiles called with:', files);
+        if (files && files.length > 0) {
+            const file = files[0];
+            console.log('Processing file:', file.name, file.type);
+            
+            // Check if it's an image
+            if (!file.type.startsWith('image/')) {
+                console.warn('Invalid file type:', file.type);
+                alert('Please upload an image file (JPG, PNG)');
+                return;
+            }
+            
+            // Show loading state
+            if (loadingState) loadingState.style.display = 'block';
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                console.log('File loaded successfully');
+                
+                // Update the preview image
+                if (imagePreview) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                
+                // Set the original image for the result
+                if (originalImage) {
+                    originalImage.src = e.target.result;
+                }
+                
+                // Update UI
+                if (dropZone) dropZone.style.display = 'none';
+                if (previewContainer) {
+                    previewContainer.style.display = 'block';
+                    // Ensure the container is visible
+                    previewContainer.style.opacity = '1';
+                    previewContainer.style.visibility = 'visible';
+                }
+                
+                // Enable the simulate button
+                if (simulateButton) simulateButton.disabled = false;
+                
+                // Hide loading state
+                if (loadingState) loadingState.style.display = 'none';
+                
+                console.log('Preview should be visible now');
+            };
+            
+            reader.onerror = function(error) {
+                console.error('Error reading file:', error);
+                alert('Error reading the file. Please try again.');
+                if (loadingState) loadingState.style.display = 'none';
+            };
+            
+            // Start reading the file
+            reader.readAsDataURL(file);
+        } else {
+            console.warn('No files provided');
+        }
+    }
+    
+    // Change image
+    changeImageBtn.addEventListener('click', function() {
+        dropZone.style.display = 'flex';
+        previewContainer.style.display = 'none';
+        simulateButton.disabled = true;
+        fileInput.value = '';
+    });
+    
+    // Form submission handler
+    const simulateForm = document.getElementById('simulateForm');
+    
+    // Prevent form from submitting when pressing Enter
+    simulateForm.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            return false;
+        }
+    });
+    
+    simulateForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!fileInput.files || !fileInput.files[0]) {
+            alert('Please select an image first');
+            return;
+        }
+        
+        // Show loading state
+        if (initialState) initialState.style.display = 'none';
+        if (resultState) resultState.style.display = 'none';
+        if (loadingState) loadingState.style.display = 'block';
+        
+        // Create FormData and append the file and years
+        const formData = new FormData(simulateForm);
+        
+        // Log form data for debugging
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ', pair[1]);
+        }
+        
+        // Submit the form
+        fetch('{{ url_for("simulate") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'  // This tells Flask it's an AJAX request
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw err; });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Success:', data);
+            // Handle successful response
+            if (data.success && data.image_path) {
+                // Update the result state with the new image
+                if (simulatedImage) {
+                    // Add timestamp to prevent caching
+                    simulatedImage.src = data.image_path + '?t=' + new Date().getTime();
+                    simulatedImage.alt = 'Simulated age progression';
+                    
+                    // Show the result section
+                    if (resultState) {
+                        resultState.style.display = 'block';
+                        // Update the age display
+                        const ageDisplay = document.getElementById('simulatedAge');
+                        if (ageDisplay) {
+                            ageDisplay.textContent = data.years || '10';
+                        }
+                    }
+                    
+                    // Hide loading state
+                    if (loadingState) loadingState.style.display = 'none';
+                    
+                    // Scroll to results
+                    resultState.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } else {
+                throw new Error(data.error || 'Unknown error occurred');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Show error message
+            const errorMessage = error.message || 'An error occurred while processing the image.';
+            alert('Error: ' + errorMessage);
+            // Show initial state
+            if (initialState) initialState.style.display = 'flex';
+        })
+        .finally(() => {
+            if (loadingState) loadingState.style.display = 'none';
+        });
+    });
+</script>
+
+<style>
+/* Range input styling */
+.form-range::-webkit-slider-thumb {
+    background: #0d6efd;
+}
+
+.form-range::-moz-range-thumb {
+    background: #0d6efd;
+}
+
+.form-range::-ms-thumb {
+    background: #0d6efd;
+}
+
+/* Preview container */
+#previewContainer {
+    display: none; /* Start hidden */
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    margin-top: 1rem;
+}
+
+#previewContainer.show {
+    display: block;
+}
+
+#imagePreview {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Drop zone styling */
+#dropZone {
+    transition: all 0.3s ease;
+    min-height: 200px;
+}
+
+#dropZone.drag-over {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Loading state */
+#loadingState {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+}
+</style>
+{% endblock %}
