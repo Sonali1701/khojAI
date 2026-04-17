@@ -4,7 +4,7 @@ services:
     name: khojai-app
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && pip install gunicorn
     startCommand: python3 -m gunicorn app:app
     healthCheckPath: /
     
