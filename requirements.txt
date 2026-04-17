@@ -14,11 +14,11 @@ scikit-image>=0.22.0
 # Machine Learning & Deep Learning
 torch>=2.0.0
 torchvision>=0.15.0
-tensorflow>=2.13.0
-tf-keras>=2.13.0
+# tensorflow>=2.13.0  # Temporarily disabled - not compatible with Python 3.14
+# tf-keras>=2.13.0     # Temporarily disabled - not compatible with Python 3.14
 
 # Face Recognition & Analysis
-deepface>=0.0.79
+# deepface>=0.0.79     # Temporarily disabled - requires tensorflow
 
 # AI/ML Libraries
 transformers>=4.35.0
